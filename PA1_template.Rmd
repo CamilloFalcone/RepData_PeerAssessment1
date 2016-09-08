@@ -7,11 +7,28 @@ output:
 
 
 ## Loading and preprocessing the data
-
+```{r read}
+library(dplyr)
+setwd("~/Desktop/Reproducible research/Assign_1")
+data<-read.table("activity.csv", header = TRUE, sep = ",")
+days <- group_by(data, date)
+intervals <- group_by(data, interval)
+total_by_day <- summarize(days, s1 = sum(steps, na.rm = TRUE))
+avg_by_interval <- summarize(intervals, avg = mean(steps, na.rm = TRUE))
+```
 
 
 ## What is mean total number of steps taken per day?
 
+### Histogram
+
+```{r histogram}
+barplot(total_by_day$s1, main = "Number of steps by days", ylab = "Number of steps")
+mean(total_by_day$s1)
+median(total_by_day$s1)
+
+
+```
 
 
 ## What is the average daily activity pattern?
