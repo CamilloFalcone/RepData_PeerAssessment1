@@ -30,13 +30,31 @@ median(total_by_day$s1)
 
 ```
 
+### Mean and median
+```{r mean}
+mean(total_by_day$s1)
+median(total_by_day$s1)
+```
+
+### Time series plots
+
+```{r time series}
+
+plot(avg ~ interval, avg_by_interval, type = "l")
+```
 
 ## What is the average daily activity pattern?
 
+### interval with the max avg of steps
 
+```{r max}
+which(avg_by_interval$avg == max(avg_by_interval$avg))
+```
 
 ## Imputing missing values
 
-
+```{r missing}
+sum(is.na(data$steps))
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
