@@ -1,10 +1,13 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
+
+
 output: 
   html_document:
     keep_md: true
 ---
 
+## Author: Camillo Falcone
 
 ## Loading and preprocessing the data
 ```{r read}
@@ -23,22 +26,20 @@ avg_by_interval <- summarize(intervals, avg = mean(steps, na.rm = TRUE))
 ### Histogram
 
 ```{r histogram}
-barplot(total_by_day$s1, main = "Number of steps by days", ylab = "Number of steps")
-mean(total_by_day$s1)
-median(total_by_day$s1)
-
+barplot(total_by_day$s1, main = "Total number of steps taken each day", ylab = "Number of steps")
 
 ```
 
 ### Mean and median
 ```{r mean}
-mean(total_by_day$s1)
-median(total_by_day$s1)
+m1 <- mean(total_by_day$s1)
+m2 <- median(total_by_day$s1)
 ```
+The mean value of the total number of steps taken per day is `r m1` while the median value is `r m2`.
 
 ### Time series plots
 
-```{r time series}
+```{r time_series}
 
 plot(avg ~ interval, avg_by_interval, type = "l")
 ```
@@ -48,13 +49,44 @@ plot(avg ~ interval, avg_by_interval, type = "l")
 ### interval with the max avg of steps
 
 ```{r max}
-which(avg_by_interval$avg == max(avg_by_interval$avg))
+max<- which(avg_by_interval$avg == max(avg_by_interval$avg))
 ```
+The 5-minute interval, on average across all the days in the dataset, which contains the maximum number of steps is `r max`.
 
 ## Imputing missing values
 
 ```{r missing}
-sum(is.na(data$steps))
+missing <- sum(is.na(data$steps))
+library (data.table)
+m<-data.table(merge (x = data, y = avg_by_interval, all.x = TRUE))
+m<- m[order(m$date)]
+m$avg <- as.integer(m$avg)
+m[is.na(steps), steps := avg]
+days_no_na <- group_by(m, date)
+total_by_day_no_na <- summarize(days_no_na, s1 = sum(steps, na.rm = TRUE))
+barplot(total_by_day_no_na$s1, main = "Total number of steps by days (with no missing values)", ylab = "Number of steps")
+m3 <- mean(total_by_day_no_na$s1)
+m4 <- median(total_by_day_no_na$s1)
 ```
 
+The total nuber of missing values in the dataset is `r missing`.
+By adopting the strategy of using the mean for the 5-minute interval when a NA value is found, the mean of the total number of steps taken per day is `r m3` while the median is `r m4`
+
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r weekends, fig.width=8, fig.height=8}
+m<- m[,wd:=weekdays(as.Date(m$date))] 
+levels(m$wd) <- c(levels(m$wd), c("weekend", "weekday")) 
+m$wd[(m$wd == "Domenica") | (m$wd == "Sabato")] <- "weekend" 
+m$wd[m$wd != "weekend"] <- "weekday" 
+
+wd_intervals <- group_by(subset(m, wd == "weekday"), interval)
+we_intervals <- group_by (subset(m, wd == "weekend"), interval )
+wd_avg_by_interval <- summarize(wd_intervals, avg = mean(steps, na.rm = TRUE))
+we_avg_by_interval <- summarize(we_intervals, avg = mean(steps, na.rm = TRUE))
+par(mfcol= c(2,1))
+plot(avg ~ interval, wd_avg_by_interval, type = "l", main = "Averaged across all working days")
+plot(avg ~ interval, we_avg_by_interval, type = "l", main = "Averaged across all weekend days")
+
+
+```
